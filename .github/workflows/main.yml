@@ -1,13 +1,14 @@
-name: Build APK Moneytrackk
+name: Build Android APK
 
 on:
   push:
-    branches: ["main"]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Ambil kode proyek
         uses: actions/checkout@v4
@@ -15,32 +16,31 @@ jobs:
       - name: Siapkan Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
 
-      - name: Install paket
-        run: npm install
-
-      - name: Siapkan Java
+      - name: Siapkan Java 17
         uses: actions/setup-java@v4
         with:
-          distribution: "temurin"
-          java-version: "17"
+          distribution: 'temurin'
+          java-version: '17'
 
-      - name: Siapkan Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Siapkan proyek Android
+      - name: Install dependensi & Build Web
         run: |
-          if [ ! -d "android" ]; then
-            npx cap init Moneytrackk com.moneytrackk.app --web-dir=www
-            npx cap add android
-          else
-            npx cap sync android
-          fi
+          npm install
+          npm run build
 
-      - name: Buat file APK
-        working-directory: android
-        run: chmod +x gradlew && ./gradlew assembleDebug
+      - name: Pasang Capacitor & Buat Proyek Android
+        run: |
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+          npx cap init "Moneytrackk" "com.ashila.moneytrackk" --web-dir=dist || true
+          npx cap add android
+          npx cap sync android
+
+      - name: Kompilasi menjadi file APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
       - name: Simpan hasil APK ke Artifacts
         uses: actions/upload-artifact@v4
