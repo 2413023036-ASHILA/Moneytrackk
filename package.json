@@ -1,16 +1,60 @@
-{
-  "name": "moneytrack",
-  "version": "1.0.0",
-  "description": "MoneyTrack – Smart Personal Finance Management App",
-  "private": true,
-  "engines": {
-    "node": "18.x"
-  },
-  "scripts": {
-    "dev": "npx serve . -l 3000",
-    "start": "npx serve . -l 3000"
-  },
-  "keywords": ["finance", "personal-finance", "moneytrack", "budgeting"],
-  "author": "MoneyTrack",
-  "license": "MIT"
-}
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ambil kode proyek
+        uses: actions/checkout@v4
+
+      - name: Siapkan Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Siapkan Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install dependensi & Build Web
+        run: |
+          npm install
+          npm run build --if-present
+
+      - name: Siapkan folder web untuk Android
+        run: |
+          if [ ! -d "dist" ]; then
+            if [ -d "build" ]; then
+              cp -r build dist
+            else
+              mkdir -p dist
+              cp -r *.html *.css *.js assets images src public dist/ 2>/dev/null || true
+            fi
+          fi
+
+      - name: Pasang Capacitor & Buat Proyek Android
+        run: |
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+          npx cap init "Moneytrackk" "com.ashila.moneytrackk" --web-dir=dist || true
+          npx cap add android
+          npx cap sync android
+
+      - name: Kompilasi menjadi file APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Simpan hasil APK ke Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Moneytrackk-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
