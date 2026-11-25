@@ -1,0 +1,16 @@
+{
+  "name": "moneytrack",
+  "version": "1.0.0",
+  "description": "MoneyTrack – Smart Personal Finance Management App",
+  "private": true,
+  "engines": {
+    "node": "18.x"
+  },
+  "scripts": {
+    "dev": "npx serve . -l 3000",
+    "start": "npx serve . -l 3000"
+  },
+  "keywords": ["finance", "personal-finance", "moneytrack", "budgeting"],
+  "author": "MoneyTrack",
+  "license": "MIT"
+}

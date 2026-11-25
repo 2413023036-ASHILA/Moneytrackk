@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "name": "moneytrack",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
