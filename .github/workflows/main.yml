@@ -1,25 +1,49 @@
-name: CI
+name: Build APK Moneytrackk
 
 on:
   push:
     branches: ["main"]
-  pull_request:
-    branches: ["main"]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
+      - name: Ambil kode proyek
         uses: actions/checkout@v4
 
-      - name: Check repository
-        run: echo "Moneytrackk workflow berhasil dijalankan!"
+      - name: Siapkan Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
 
-      - name: Upload artifact
+      - name: Install paket
+        run: npm install
+
+      - name: Siapkan Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Siapkan Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Siapkan proyek Android
+        run: |
+          if [ ! -d "android" ]; then
+            npx cap init Moneytrackk com.moneytrackk.app --web-dir=www
+            npx cap add android
+          else
+            npx cap sync android
+          fi
+
+      - name: Buat file APK
+        working-directory: android
+        run: chmod +x gradlew && ./gradlew assembleDebug
+
+      - name: Simpan hasil APK ke Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: main-yml
-          path: .github/workflows/main.yml
-          
+          name: Moneytrackk-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
